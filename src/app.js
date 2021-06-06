@@ -6,17 +6,10 @@ class TimersDashboard extends React.Component {
   state = {
     timers: [
       {
-        title: 'Practise squat',
-        project: 'Gym Chores',
+        title: 'timer template',
+        project: 'template project',
         id: uuid(),
-        elapsed: 5456099,
-        runningSince: Date.now()
-      },
-      {
-        title: 'Bake squash',
-        project: 'Kitchen Chores',
-        id: uuid(),
-        elapsed: 1273998,
+        elapsed: 0,
         runningSince: null
       }
     ]
@@ -46,7 +39,7 @@ class TimersDashboard extends React.Component {
     const newTimer = helpers.newTimer(timer);
     this.setState({
       timers: this.state.timers.concat(newTimer)
-    })
+    }, () => { this.updateLocalStorage(this.state.timers) });
   }
 
   updateTimer = (attrs) => {
@@ -61,13 +54,13 @@ class TimersDashboard extends React.Component {
           return timer;
         }
       })
-    });
+    }, () => { this.updateLocalStorage(this.state.timers) });
   }
 
   deleteTimer = (timerId) => {
     this.setState({
       timers: this.state.timers.filter(timer => timer.id !== timerId)
-    })
+    }, () => { this.updateLocalStorage(this.state.timers) });
   }
 
   startTimer = (timerId) => {
@@ -79,7 +72,7 @@ class TimersDashboard extends React.Component {
           return timer;
         }
       })
-    })
+    }, () => { this.updateLocalStorage(this.state.timers) });
   }
 
   stopTimer = (timerId) => {
@@ -90,13 +83,23 @@ class TimersDashboard extends React.Component {
         if (timer.id === timerId) {
           const lastElapsed = now - timer.runningSince;
           const elapsed = timer.elapsed + lastElapsed;
-          console.log(`lastElapses: ${lastElapsed}`);
           return { ...timer, elapsed, runningSince: null }
         } else {
           return timer;
         }
       })
-    })
+    }, () => { this.updateLocalStorage(this.state.timers) });
+  }
+
+  updateLocalStorage = (timers) => {
+    // this.setState({ timers });
+    localStorage.setItem('timers', JSON.stringify(timers));
+  }
+
+  componentDidMount() {
+    const localTimers = localStorage.getItem('timers');
+    if (localTimers === null) this.updateLocalStorage(this.state.timers);
+    else this.setState({ timers: JSON.parse(localTimers) });
   }
 
   render() {
@@ -297,7 +300,7 @@ class ToggleableTimerForm extends React.Component {
 
 class Timer extends React.Component {
   componentDidMount() {
-    this.forceUpdateInterval = setInterval(() => this.forceUpdate(), 200);
+    this.forceUpdateInterval = setInterval(() => this.forceUpdate(), 100);
   }
 
   componentWillUnmount() {
